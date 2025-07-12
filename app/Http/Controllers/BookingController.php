@@ -12,10 +12,8 @@ class BookingController extends Controller
     private BoardingHouseRepositoryInterface $boardingHouseRepository;
     private TransactionRepositoryInterface $transactionRepository;
 
-    public function __construct(
-        BoardingHouseRepositoryInterface $boardingHouseRepository,
-        TransactionRepositoryInterface $transactionRepository
-    ) {
+    public function __construct(BoardingHouseRepositoryInterface $boardingHouseRepository, TransactionRepositoryInterface $transactionRepository)
+    {
         $this->boardingHouseRepository = $boardingHouseRepository;
         $this->transactionRepository = $transactionRepository;
     }
@@ -60,7 +58,26 @@ class BookingController extends Controller
 
         $transaction = $this->transactionRepository->saveTransaction($this->transactionRepository->getTransactionDataFromSession());
 
-        dd($transaction);
+        \Midtrans\Config::$serverKey = config('midtrans.serverKey');
+        \Midtrans\Config::$isProduction = config('midtrans.isProduction');
+        \Midtrans\Config::$isSanitized = config('midtrans.isSanitized');
+        \Midtrans\Config::$is3ds = config('midtrans.is3ds');
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $transaction->code,
+                'gross_amount' => $transaction->total_amount,
+            ],
+            'customer_details' => [
+                'first_name' => $transaction->name,
+                'email' => $transaction->email,
+                'phone' => $transaction->phone_number,
+            ],
+        ];
+
+        $paymentUrl = \Midtrans\Snap::createTransaction($params)->redirect_url;
+
+        return redirect($paymentUrl);
     }
 
     public function check()
