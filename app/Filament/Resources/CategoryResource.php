@@ -26,7 +26,8 @@ class CategoryResource extends Resource
             ->schema([
                 Forms\Components\FileUpload::make('image')
                     ->image()
-                    ->directory('cities')
+                    ->directory('categories')
+                    ->disk('public')
                     ->required()
                     ->columnSpan(2),
                 Forms\Components\TextInput::make('name')
@@ -45,12 +46,14 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\ImageColumn::make('image')
+                    ->disk('public')
+                    ->visibility('public'),
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextColumn::make('slug'),
             ])
             ->filters([
-                //
+                
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
